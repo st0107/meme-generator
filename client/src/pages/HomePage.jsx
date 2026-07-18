@@ -14,14 +14,14 @@ export default function HomePage() {
             Turn any topic into a hilarious meme in seconds.
           </h1>
           <p className="mt-6 text-lg text-slate-600 dark:text-slate-300">
-            Describe your idea, pick a vibe, select a template, and let AI craft the perfect punchline.
+            Describe your idea, pick a vibe, select a template, edit the captions, and download a share-ready PNG.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link to="/generator" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-fuchsia-600 via-purple-600 to-cyan-500 px-6 py-3 font-semibold text-white shadow-lg">
               Generate Meme <ArrowRight size={18} />
             </Link>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-3 text-sm dark:border-slate-700">
-              <Images size={16} /> Popular templates included
+              <Images size={16} /> Templates and uploads
             </div>
           </div>
         </div>
@@ -30,9 +30,9 @@ export default function HomePage() {
             <Download size={20} /> Fast, polished, and shareable
           </div>
           <ul className="mt-6 space-y-4 text-sm text-slate-600 dark:text-slate-300">
-            <li>• Instant AI-generated captions tailored to your tone.</li>
-            <li>• Template gallery with classic meme layouts.</li>
-            <li>• One-click PNG download and local history.</li>
+            <li>- Instant AI-generated captions tailored to your tone.</li>
+            <li>- Template gallery, custom uploads, and editable captions.</li>
+            <li>- One-click PNG download and reusable local history.</li>
           </ul>
         </div>
       </section>
