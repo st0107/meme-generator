@@ -22,6 +22,7 @@ const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
 const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || 25);
 const MAX_PROMPT_LENGTH = 280;
 const allowedTones = ['funny', 'dark', 'sarcastic', 'programmer', 'corporate'];
+const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 
 app.use(cors({
   origin(origin, callback) {
@@ -129,6 +130,30 @@ function validateGeneratePayload(body) {
   return { prompt, tone, templateId };
 }
 
+function getAiFailureNotice(error) {
+  const status = error.response?.status;
+  const apiStatus = error.response?.data?.error?.status;
+  const message = error.response?.data?.error?.message || error.message || '';
+
+  if (status === 429 || apiStatus === 'RESOURCE_EXHAUSTED') {
+    return 'Gemini quota was exceeded for this API key/project, so a local fallback was used.';
+  }
+
+  if (status === 400) {
+    return 'Gemini rejected the request. Check the model name and API key configuration.';
+  }
+
+  if (status === 401 || status === 403) {
+    return 'Gemini authorization failed. Check that the API key is valid and enabled.';
+  }
+
+  if (/AI response did not contain JSON|JSON/i.test(message)) {
+    return 'Gemini returned text in an unexpected format, so a local fallback was used.';
+  }
+
+  return 'AI captions were unavailable, so a local fallback was used.';
+}
+
 app.post('/generate-meme', rateLimit, async (req, res) => {
   const validated = validateGeneratePayload(req.body);
 
@@ -152,7 +177,7 @@ app.post('/generate-meme', rateLimit, async (req, res) => {
     }
 
     const aiResponse = await axios.post(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + process.env.GEMINI_API_KEY,
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         contents: [
           {
@@ -175,14 +200,16 @@ app.post('/generate-meme', rateLimit, async (req, res) => {
       source: 'ai',
     });
   } catch (error) {
-    console.error(error.message);
+    const status = error.response?.status ? `HTTP ${error.response.status}` : 'local error';
+    const apiMessage = error.response?.data?.error?.message || error.message;
+    console.error(`Gemini generation failed (${status}): ${apiMessage}`);
     const fallback = createFallbackCaptions(prompt, tone);
     res.json({
       topText: fallback.topText,
       bottomText: fallback.bottomText,
       template: selectedTemplate,
       source: 'fallback',
-      notice: 'AI captions were unavailable, so a local fallback was used.',
+      notice: getAiFailureNotice(error),
     });
   }
 });

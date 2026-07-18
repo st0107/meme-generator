@@ -53,6 +53,7 @@ The production server listens on `PORT` or `5000` and serves the built client fr
 ```bash
 CLIENT_ORIGIN=http://localhost:5173
 GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.0-flash
 PORT=5000
 RATE_LIMIT_MAX=25
 RATE_LIMIT_WINDOW_MS=60000
